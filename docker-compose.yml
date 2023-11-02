@@ -1,0 +1,132 @@
+version: '3.7'
+
+services:
+  extension-master:
+    build:
+      context: mysql/
+      dockerfile: Dockerfile
+      args:
+        MYSQL_DATABASE: $MYSQL_DATABASE
+        MYSQL_USER: $MYSQL_USER
+        MYSQL_PASSWORD: $MYSQL_PASSWORD
+        MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+    container_name: extension-mysql-master
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-time-zone=Asia/Ho_Chi_Minh --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3306:3306
+
+  extension-so:
+    build:
+      context: mysql/
+      dockerfile: Dockerfile
+      args:
+        MYSQL_DATABASE: $MYSQL_DATABASE
+        MYSQL_USER: $MYSQL_USER
+        MYSQL_PASSWORD: $MYSQL_PASSWORD
+        MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+    container_name: extension-db-so
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-time-zone=Asia/Ho_Chi_Minh --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3310:3306
+
+  extension-redis:
+    build:
+      context: redis/
+      dockerfile: Dockerfile
+      args:
+        REDIS_VERSION: $REDIS_VERSION
+    container_name: extension-redis
+    ports:
+      - 6379:6379
+
+  extension-elasticsearch:
+    build:
+      context: elk/elasticsearch/
+      args:
+        ELASTIC_VERSION: $ELASTIC_VERSION
+    container_name: extension-elasticsearch
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    networks:
+      - extension-elk
+
+  extension-kibana:
+    build:
+      context: elk/kibana/
+      args:
+        ELASTIC_VERSION: $ELASTIC_VERSION
+    container_name: extension-kibana
+    networks:
+      - extension-elk
+    depends_on:
+      - extension-elasticsearch
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_URL=http://localhost:9200
+      
+  extension-sonarqube:
+    build:
+      context: sonarqube
+      args:
+        SONAR_QUBE_VERSION: $SONAR_QUBE_VERSION
+    container_name: extension-sonarqube
+    ports:
+      - $SONAR_QUBE_DEFAULT_PORT:9000
+      - $SONAR_QUBE_EXTEND_PORT:9092
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+
+  extension-mongo-db:
+    image: mongo:${MONGO_VERSION}
+    container_name: extension-mongo-db
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      # seeding scripts
+      - ./mongodb/mongo-entrypoint:/docker-entrypoint-initdb.d
+      # named volumes
+      - mongodb:/data/db
+      - mongoconfig:/data/configdb
+    networks:
+      - extension-mongodb
+
+  extension-mongo-client:
+    # build will get tagged with 'image'
+    build: ./mongodb/mongo-client
+    image: mongo-client:3.9
+    container_name: extension-mongo-client
+    environment:
+      - MONGO_SERVER=auth-mongo-db
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - extension-mongodb
+    depends_on:
+      - extension-mongo-db
+
+networks:
+  extension-elk:
+    driver: bridge
+  extension-mongodb:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:
+  sonarqube-data:
+  sonarqube-logs:
+  mongodb:
+  mongoconfig:
