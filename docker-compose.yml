@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  extension-master:
+  extension-mysql:
     build:
       context: mysql/
       dockerfile: Dockerfile
@@ -10,24 +10,10 @@ services:
         MYSQL_USER: $MYSQL_USER
         MYSQL_PASSWORD: $MYSQL_PASSWORD
         MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
-    container_name: extension-mysql-master
+    container_name: extension-db-mysql
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-time-zone=Asia/Ho_Chi_Minh --default-authentication-plugin=mysql_native_password
     restart: always
-    ports:
-      - 3306:3306
-
-  extension-so:
-    build:
-      context: mysql/
-      dockerfile: Dockerfile
-      args:
-        MYSQL_DATABASE: $MYSQL_DATABASE
-        MYSQL_USER: $MYSQL_USER
-        MYSQL_PASSWORD: $MYSQL_PASSWORD
-        MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
-    container_name: extension-db-so
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-time-zone=Asia/Ho_Chi_Minh --default-authentication-plugin=mysql_native_password
-    restart: always
+    profiles: ["mysql"]
     ports:
       - 3310:3306
 
@@ -38,6 +24,7 @@ services:
       args:
         REDIS_VERSION: $REDIS_VERSION
     container_name: extension-redis
+    profiles: ["redis"]
     ports:
       - 6379:6379
 
@@ -56,6 +43,7 @@ services:
       - discovery.type=single-node
     networks:
       - extension-elk
+    profiles: ["elk"]
 
   extension-kibana:
     build:
@@ -71,6 +59,7 @@ services:
       - 5601:5601
     environment:
       - ELASTICSEARCH_URL=http://localhost:9200
+    profiles: ["elk"]
       
   extension-sonarqube:
     build:
@@ -84,6 +73,7 @@ services:
     volumes:
       - sonarqube-data:/opt/sonarqube/data
       - sonarqube-logs:/opt/sonarqube/logs
+    profiles: ["sonarqube"]
 
   extension-mongo-db:
     image: mongo:${MONGO_VERSION}
@@ -102,6 +92,7 @@ services:
       - mongoconfig:/data/configdb
     networks:
       - extension-mongodb
+    profiles: ["mongo"]
 
   extension-mongo-client:
     # build will get tagged with 'image'
@@ -117,6 +108,7 @@ services:
       - extension-mongodb
     depends_on:
       - extension-mongo-db
+    profiles: ["mongo"]
 
 networks:
   extension-elk:
