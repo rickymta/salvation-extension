@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  extension-elasticsearch:
+    build:
+      context: elk/elasticsearch/
+      args:
+        ELASTIC_VERSION: $ELASTIC_VERSION
+    container_name: ex-elasticsearch
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    networks:
+      - extension-elk
+
+  extension-kibana:
+    build:
+      context: elk/kibana/
+      args:
+        ELASTIC_VERSION: $ELASTIC_VERSION
+    container_name: ex-kibana
+    networks:
+      - extension-elk
+    depends_on:
+      - ex-elasticsearch
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_URL=http://localhost:9200
+
+networks:
+  extension-elk:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:

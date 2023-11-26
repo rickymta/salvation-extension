@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+  extension-sonarqube:
+    build:
+      context: sonarqube
+      args:
+        SONAR_QUBE_VERSION: $SONAR_QUBE_VERSION
+    container_name: ex-sonarqube
+    ports:
+      - $SONAR_QUBE_DEFAULT_PORT:9000
+      - $SONAR_QUBE_EXTEND_PORT:9092
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+
+volumes:
+  sonarqube-data:
+  sonarqube-logs:

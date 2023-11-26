@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  extension-redis:
+    build:
+      context: redis/
+      dockerfile: Dockerfile
+      args:
+        REDIS_VERSION: $REDIS_VERSION
+    container_name: ex-redis
+    ports:
+      - 6379:6379
