@@ -5,13 +5,12 @@ services:
     build:
       context: mysql/
       dockerfile: Dockerfile
-      images: extension-db-mysql
       args:
         MYSQL_DATABASE: $MYSQL_DATABASE
         MYSQL_USER: $MYSQL_USER
         MYSQL_PASSWORD: $MYSQL_PASSWORD
         MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
-    container_name: extension-db-mysql
+    container_name: ex-db-mysql
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-time-zone=Asia/Ho_Chi_Minh --default-authentication-plugin=mysql_native_password
     restart: always
     ports:
@@ -21,20 +20,18 @@ services:
     build:
       context: redis/
       dockerfile: Dockerfile
-      images: extension-redis
       args:
         REDIS_VERSION: $REDIS_VERSION
-    container_name: extension-redis
+    container_name: ex-redis
     ports:
       - 6379:6379
 
   extension-elasticsearch:
     build:
       context: elk/elasticsearch/
-      images: extension-elasticsearch
       args:
         ELASTIC_VERSION: $ELASTIC_VERSION
-    container_name: extension-elasticsearch
+    container_name: ex-elasticsearch
     ports:
       - 9200:9200
     volumes:
@@ -48,14 +45,13 @@ services:
   extension-kibana:
     build:
       context: elk/kibana/
-      images: extension-kibana
       args:
         ELASTIC_VERSION: $ELASTIC_VERSION
-    container_name: extension-kibana
+    container_name: ex-kibana
     networks:
       - extension-elk
     depends_on:
-      - extension-elasticsearch
+      - ex-elasticsearch
     ports:
       - 5601:5601
     environment:
@@ -64,10 +60,9 @@ services:
   extension-sonarqube:
     build:
       context: sonarqube
-      images: extension-sonarqube
       args:
         SONAR_QUBE_VERSION: $SONAR_QUBE_VERSION
-    container_name: extension-sonarqube
+    container_name: ex-sonarqube
     ports:
       - $SONAR_QUBE_DEFAULT_PORT:9000
       - $SONAR_QUBE_EXTEND_PORT:9092
@@ -77,7 +72,7 @@ services:
 
   extension-mongo-db:
     image: mongo:${MONGO_VERSION}
-    container_name: extension-mongo-db
+    container_name: ex-mongo-db
     ports:
       - 27017:27017
     environment:
@@ -97,7 +92,7 @@ services:
     # build will get tagged with 'image'
     build: ./mongodb/mongo-client
     image: mongo-client:3.9
-    container_name: extension-mongo-client
+    container_name: ex-mongo-client
     environment:
       - MONGO_SERVER=auth-mongo-db
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
@@ -111,8 +106,7 @@ services:
   extension-mssql:
     build:
       context: mssql
-      images: extension-mssqlserver
-    container_name: mssqlserver
+    container_name: ex-mssql
     restart: always
     hostname: mssql
     environment:
