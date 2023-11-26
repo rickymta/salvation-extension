@@ -109,6 +109,25 @@ services:
     depends_on:
       - extension-mongo-db
     profiles: ["mongo"]
+    
+  extension-mssql:
+    build:
+      context: ./
+      dockerfile: mssql/Dockerfile
+    container_name: mssqlserver
+    restart: always
+    hostname: mssql
+    environment:
+      SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: Y
+
+    volumes:
+      - mssqlvolume:/var/opt/mssql/data
+      - ./bk:/var/opt/mssql/backup
+    ports:
+      - "1433:1433"
+
+    profiles: ["mssql"]
 
 networks:
   extension-elk:
@@ -122,3 +141,4 @@ volumes:
   sonarqube-logs:
   mongodb:
   mongoconfig:
+  mssqlvolume:
