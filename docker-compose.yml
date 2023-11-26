@@ -5,6 +5,7 @@ services:
     build:
       context: mysql/
       dockerfile: Dockerfile
+      images: extension-db-mysql
       args:
         MYSQL_DATABASE: $MYSQL_DATABASE
         MYSQL_USER: $MYSQL_USER
@@ -13,24 +14,24 @@ services:
     container_name: extension-db-mysql
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-time-zone=Asia/Ho_Chi_Minh --default-authentication-plugin=mysql_native_password
     restart: always
-    profiles: ["mysql"]
     ports:
-      - 3310:3306
+      - 3306:3306
 
   extension-redis:
     build:
       context: redis/
       dockerfile: Dockerfile
+      images: extension-redis
       args:
         REDIS_VERSION: $REDIS_VERSION
     container_name: extension-redis
-    profiles: ["redis"]
     ports:
       - 6379:6379
 
   extension-elasticsearch:
     build:
       context: elk/elasticsearch/
+      images: extension-elasticsearch
       args:
         ELASTIC_VERSION: $ELASTIC_VERSION
     container_name: extension-elasticsearch
@@ -43,11 +44,11 @@ services:
       - discovery.type=single-node
     networks:
       - extension-elk
-    profiles: ["elk"]
 
   extension-kibana:
     build:
       context: elk/kibana/
+      images: extension-kibana
       args:
         ELASTIC_VERSION: $ELASTIC_VERSION
     container_name: extension-kibana
@@ -59,11 +60,11 @@ services:
       - 5601:5601
     environment:
       - ELASTICSEARCH_URL=http://localhost:9200
-    profiles: ["elk"]
       
   extension-sonarqube:
     build:
       context: sonarqube
+      images: extension-sonarqube
       args:
         SONAR_QUBE_VERSION: $SONAR_QUBE_VERSION
     container_name: extension-sonarqube
@@ -73,7 +74,6 @@ services:
     volumes:
       - sonarqube-data:/opt/sonarqube/data
       - sonarqube-logs:/opt/sonarqube/logs
-    profiles: ["sonarqube"]
 
   extension-mongo-db:
     image: mongo:${MONGO_VERSION}
@@ -92,7 +92,6 @@ services:
       - mongoconfig:/data/configdb
     networks:
       - extension-mongodb
-    profiles: ["mongo"]
 
   extension-mongo-client:
     # build will get tagged with 'image'
@@ -108,12 +107,11 @@ services:
       - extension-mongodb
     depends_on:
       - extension-mongo-db
-    profiles: ["mongo"]
     
   extension-mssql:
     build:
-      context: ./
-      dockerfile: mssql/Dockerfile
+      context: mssql
+      images: extension-mssqlserver
     container_name: mssqlserver
     restart: always
     hostname: mssql
@@ -126,8 +124,6 @@ services:
       - ./bk:/var/opt/mssql/backup
     ports:
       - "1433:1433"
-
-    profiles: ["mssql"]
 
 networks:
   extension-elk:
