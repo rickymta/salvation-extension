@@ -1,5 +1,5 @@
-# Salvation Auth Whale
-## salvation-auth-whale
+# Salvation Extension
+## salvation-extension
 
 [![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://nodesource.com/products/nsolid)
 
@@ -17,32 +17,24 @@
 
 ## Features
 
-Auth Whale is the service that provides the following features:
+Salvation Extension is the collection of services that provides the following extension of database and services:
 
+- ✨ MS SQL Server database ✨
 - ✨ MySQL database ✨
 - ✨ MongoDB database ✨
 - ✨ SonarQube ✨
 - ✨ Redis ✨
 - ✨ ELK Stack ✨
-
-
-## Techical
-
-Salvation Auth Whale uses a number of open source projects to work properly:
-
-- [ELK] - Elasticsearch - LogStash - Kibana
-- [SonarQube] - SonarQube service
-- [Redis] - Redis cache
-- [MySQL] - MySQL service
+- ✨ PostgreSQL ✨
+- ✨ Monitoring with Grafana ✨
 
 
 ## Installation
 
-Salvation Auth Whale requires [Net7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) to run.
-
-After install sdk, following this command to run:
+Following this command to run:
 
 ```sh
 cd salvation-extension
+cd ex-<extension>
 docker-compose up -d
 ```
