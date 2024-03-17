@@ -1,6 +1,6 @@
-create database sample_db;
+create database order_db;
 
-\c sample_db;
+\c order_db;
 
 create table payment_methods (
 	id character varying(50) not null primary key,
